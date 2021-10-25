@@ -1,0 +1,31 @@
+service: sls-oncall-twilio
+
+provider:
+  name: aws
+  runtime: nodejs14.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'eu-west-1'}
+  timeout: 10
+  memorySize: 256
+  logRetentionInDays: 14
+  lambdaHashingVersion: 20201221
+
+plugins:
+  - serverless-plugin-optimize
+
+functions:
+  bot:
+    handler: handler.handler
+    events:
+      - http:
+          path: twilio/{schedule}
+          method: post
+          request:
+            parameters:
+              paths:
+                schedule: true
+    environment:
+      PD_TOKEN: ${ssm:/sls-oncall-twilio/pd-token}
+      TWILIO_TOKEN: ${ssm:/sls-oncall-twilio/twilio-token}
+
+variablesResolutionMode: 20210326
